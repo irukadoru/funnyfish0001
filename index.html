@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海豚堂｜私密匿名文字討論板 (Hidden 2ch BBS)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 經典 2ch (5ch) 復古文字討論版配色與「海豚堂」深海藍／淡藍灰／淺米色視覺設計 */
+    :root {
+      --bg-page: #EFEFEF;
+      --bg-thread: #F5F6FA;
+      --bg-box: #E4E9F0;
+      --border-classic: #8FA3B5;
+      --text-main: #222222;
+      --text-title: #CC0000;
+      --text-name: #008000;
+      --text-link: #0000EE;
+      --text-visited: #551A8B;
+      --text-meta: #555555;
+      --dolphin-navy: #144973;
+      --dolphin-blue: #1E5B88;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: "MS PGothic", "IPAMonaPGothic", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* AA（ASCII Art）字元畫專用等寬字型模式 */
+    body.aa-font-mode .res-body {
+      font-family: "MS PGothic", "IPAMonaPGothic", "MingLiU", "PMingLiU", "Courier New", monospace;
+      line-height: 1.15;
+      letter-spacing: 0px;
+      font-size: 13px;
+    }
+
+    /* 經典細框線與微立體按鈕 */
+    .bbs-box {
+      background-color: var(--bg-thread);
+      border: 1px solid var(--border-classic);
+      box-shadow: 1px 1px 0px #FFFFFF inset;
+    }
+
+    .bbs-header-bar {
+      background-color: var(--dolphin-navy);
+      color: #FFFFFF;
+      border-bottom: 1px solid #0C3252;
+    }
+
+    .bbs-sub-bar {
+      background-color: #D7E3EE;
+      border-bottom: 1px solid var(--border-classic);
+    }
+
+    .bbs-btn {
+      background-color: #E6ECF2;
+      border: 1px solid #6E8594;
+      box-shadow: inset 1px 1px 0px #FFFFFF, inset -1px -1px 0px #9DB0BD;
+      color: #111111;
+      padding: 4px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 2px;
+      user-select: none;
+      transition: background-color 0.1s;
+    }
+
+    .bbs-btn:hover {
+      background-color: #D4E1EA;
+    }
+
+    .bbs-btn:active {
+      box-shadow: inset 1px 1px 2px #7A8F9E;
+      background-color: #C7D7E3;
+    }
+
+    .bbs-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .bbs-btn-primary {
+      background-color: #CBE2F6;
+      border-color: #2B669A;
+      color: #0B3861;
+      font-weight: bold;
+    }
+
+    .bbs-btn-primary:hover {
+      background-color: #B7D6F2;
+    }
+
+    .bbs-btn-danger {
+      background-color: #F7D4D4;
+      border-color: #A84A4A;
+      color: #800000;
+    }
+
+    .bbs-input {
+      background-color: #FFFFFF;
+      border: 1px solid #7F9DB9;
+      padding: 4px 7px;
+      font-family: inherit;
+      font-size: 13px;
+      border-radius: 2px;
+    }
+
+    .bbs-input:focus {
+      outline: 1px solid #2B669A;
+      background-color: #FFFFF8;
+    }
+
+    /* 2ch 討論串標題與樓層樣式 */
+    .thread-title {
+      color: var(--text-title);
+      font-weight: bold;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .res-name {
+      color: var(--text-name);
+      font-weight: bold;
+    }
+
+    .res-trip {
+      color: #006600;
+      font-weight: normal;
+    }
+
+    .res-num {
+      cursor: pointer;
+      color: #222222;
+      font-weight: bold;
+      padding: 1px 3px;
+      border-radius: 2px;
+    }
+
+    .res-num:hover {
+      color: var(--text-link);
+      background-color: #DDE8F2;
+      text-decoration: underline;
+    }
+
+    .anchor-link {
+      color: var(--text-link);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .anchor-link:hover {
+      color: #CC0000;
+    }
+
+    /* 樓層本文換行與AA藝術字體保護 */
+    .res-body {
+      margin-left: 24px;
+      margin-top: 4px;
+      margin-bottom: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
+    }
+
+    @media (max-width: 640px) {
+      .res-body {
+        margin-left: 12px;
+      }
+    }
+
+    /* 目標樓層跳轉高亮動畫 */
+    @keyframes flashHighlight {
+      0% { background-color: #FFF3A8; }
+      70% { background-color: #FFF3A8; }
+      100% { background-color: transparent; }
+    }
+
+    .highlight-post {
+      animation: flashHighlight 2.2s ease-out;
+      border-radius: 2px;
+    }
+
+    /* Anchor 懸浮預覽視窗 */
+    #anchor-popup {
+      position: fixed;
+      z-index: 9999;
+      max-width: 92vw;
+      width: 460px;
+      background-color: #FFFFEE;
+      border: 1px solid #5B7385;
+      box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.28);
+      padding: 8px 12px;
+      font-size: 13px;
+      pointer-events: auto;
+    }
+
+    /* 自訂通知提示條 (取代 alert) */
+    #toast-banner {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10000;
+      background-color: #144973;
+      color: #FFFFFF;
+      border: 1px solid #8FA3B5;
+      padding: 9px 15px;
+      font-size: 13px;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.35);
+      transition: opacity 0.25s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 全域懸浮 Anchor 預覽氣泡框 (滑鼠移到 >>1 上顯示) -->
+  <div id="anchor-popup" class="hidden"></div>
+
+  <!-- 全域通知訊息條 -->
+  <div id="toast-banner" class="hidden"></div>
+
+  <!-- 自訂 Modal 對話框 (取代 window.alert / window.confirm / window.prompt) -->
+  <div id="custom-modal" class="hidden fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+    <div class="bbs-box max-w-lg w-full p-4 shadow-xl">
+      <div id="modal-title" class="font-bold text-base border-b border-[#8FA3B5] pb-1.5 mb-3 text-[#144973]">提示</div>
+      <div id="modal-message" class="text-sm mb-3 whitespace-pre-wrap text-gray-800"></div>
+      <input type="text" id="modal-input" class="bbs-input w-full mb-3 hidden" placeholder="">
+      <textarea id="modal-textarea" rows="5" class="bbs-input w-full mb-3 font-mono text-xs hidden" placeholder=""></textarea>
+      <div class="flex justify-end gap-2">
+        <button id="modal-cancel-btn" class="bbs-btn">取消</button>
+        <button id="modal-confirm-btn" class="bbs-btn bbs-btn-primary">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 多人雲端連線設定精靈 Modal -->
+  <div id="cloud-wizard-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bbs-box max-w-2xl w-full p-4 sm:p-5 shadow-2xl my-auto">
+      <div class="flex items-center justify-between border-b border-[#8FA3B5] pb-2 mb-3">
+        <div class="font-bold text-base text-[#144973] flex items-center gap-2">
+          <span>☁️ 海豚堂・多人雲端即時連線設定精靈</span>
+        </div>
+        <button id="btn-close-cloud-wizard" class="bbs-btn text-xs py-0.5 px-2">✕ 關閉</button>
+      </div>
+
+      <div id="cloud-status-box" class="p-2.5 mb-3 border text-xs bg-[#F2F8FC] border-[#9BBAD0]">
+        <!-- 由 JS 動態顯示目前連線模式 -->
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-[13px] text-gray-800">
+        <div class="bg-[#E8EEF2] border border-[#8FA3B5] p-3 space-y-1.5">
+          <div class="font-bold text-[#144973]">■ 如何讓朋友在手機/電腦上一起即時聊天？（3 分鐘免費上架教學）</div>
+          <p>1. 前往 <a href="https://console.firebase.google.com/" target="_blank" rel="noopener" class="anchor-link">Firebase Console</a> 免費建立專案 → 新增「網頁應用程式 (Web)」並啟用「Firestore Database（測試模式）」與「匿名登入 (Anonymous Auth)」。</p>
+          <p>2. 將取得的 <code class="bg-white border border-gray-300 px-1">firebaseConfig</code> 物件貼入下方輸入框並儲存。</p>
+          <p>3. 點擊下方<strong>「下載已綁定雲端的海豚堂 HTML」</strong>，把下載的 <code class="bg-white border border-gray-300 px-1">index.html</code> 拖曳上傳到 <a href="https://app.netlify.com/drop" target="_blank" rel="noopener" class="anchor-link">Netlify Drop</a> 或 GitHub Pages，產生專屬網址後分享給朋友即可多人即時同步！</p>
+        </div>
+
+        <div>
+          <label class="block font-bold mb-1 text-xs">貼上你的 Firebase Config（支援 JSON 格式或直接貼上 const firebaseConfig = { ... };）：</label>
+          <textarea id="cloud-config-textarea" rows="6" class="bbs-input w-full font-mono text-xs" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "your-project.firebaseapp.com",
+  "projectId": "your-project",
+  "storageBucket": "your-project.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123456789:web:abcdef"
+}'></textarea>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div class="flex flex-wrap gap-2">
+            <button id="btn-save-cloud-config" class="bbs-btn bbs-btn-primary">套用雲端設定並重新連線</button>
+            <button id="btn-export-bound-html" class="bbs-btn">⬇️ 下載已綁定雲端的海豚堂 HTML</button>
+          </div>
+          <button id="btn-clear-cloud-config" class="bbs-btn bbs-btn-danger text-xs">清除自訂設定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       畫面 1：海豚堂私密入口大廳 (無 ?room= 參數時顯示)
+       ========================================== -->
+  <div id="lobby-view" class="hidden max-w-2xl mx-auto my-5 sm:my-10 px-3">
+    <div class="bbs-box overflow-hidden">
+      <!-- 深海藍頂部橫幅 -->
+      <div class="bbs-header-bar px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 font-bold">
+          <span>🐬 海豚堂 HIDDEN BBS</span>
+          <span class="bg-[#23679E] border border-[#5B9BD5] px-1.5 py-0.5 text-[11px]">PRIVATE INVITE ONLY</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="lobby-sync-badge" class="px-2 py-0.5 bg-[#0E3656] border border-[#4982B0] text-[11px]">偵測連線中...</span>
+          <button type="button" class="btn-open-cloud-wizard bbs-btn text-xs py-0.5 px-2">☁️ 多人雲端設定精靈</button>
+        </div>
+      </div>
+
+      <div class="p-4 sm:p-6">
+        <div class="border-b border-[#8FA3B5] pb-3 mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-3">
+            <!-- 海豚堂經典簡約像素風徽章 SVG -->
+            <div class="w-12 h-12 bg-[#D6E6F2] border border-[#6E8594] flex items-center justify-center shrink-0 shadow-inner" title="海豚堂 Hidden BBS">
+              <svg viewBox="0 0 32 32" class="w-9 h-9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 19C6 13.5 11.5 9 18 9C22.5 9 25.5 11.5 27 14.5C28.5 15 30 15.5 30 16.5C30 17.5 28 18 26.5 18C25 20.5 22 22 18.5 22C16.5 22 14.5 21.5 13 20.5L9 24L10 19.5C7.5 19.5 6 19.2 6 19Z" fill="#144973"/>
+                <path d="M16 9L14 5L19 9.2" fill="#144973"/>
+                <path d="M6 19L3 16.5L4.5 19.5L2.5 22L6.5 20.5" fill="#144973"/>
+                <circle cx="24.5" cy="14.5" r="1.2" fill="#FFFFFF"/>
+                <path d="M11 17.5C14 19 19 19 23.5 17.5" stroke="#A7D1EE" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-[#144973] tracking-wider flex items-center gap-2">
+                海豚堂
+                <span class="text-xs font-normal bg-[#144973] text-white px-1.5 py-0.5 tracking-normal">2ch風私密討論板</span>
+              </h1>
+              <p class="text-xs text-gray-600 mt-0.5">完全非公開匿名文字討論版・唯有收到分享連結的人才能進入</p>
+            </div>
+          </div>
+          <span class="text-xs bg-[#E4E9F0] border border-[#8FA3B5] px-2 py-0.5 text-[#144973] font-bold">無公開目錄</span>
+        </div>
+
+        <div class="bg-[#F2F8FC] border border-[#9BBAD0] p-3 mb-5 text-xs sm:text-sm text-gray-800 space-y-1">
+          <p class="font-bold text-[#144973]">■ 海豚堂私密連結制說明：</p>
+          <p>1. 本站<strong>不會列出任何公開看板總目錄</strong>，外部訪客無法搜尋或偶然瀏覽你的討論串。</p>
+          <p>2. 點擊下方建立「海豚堂」看板後，會生成高強度隨機密鑰網址（<code class="bg-white border border-gray-300 px-1">?room=dolphin-xxxx-xxxx-xxxx</code>），只有收到你分享連結的朋友才能進入。</p>
+          <p>3. 完整支援每日固定 ID、Tripcode（<code class="bg-white border border-gray-300 px-1">#密碼</code>）、<code class="bg-white border border-gray-300 px-1">&gt;&gt;樓層引用預覽</code>、<code class="bg-white border border-gray-300 px-1">sage</code> 不推文與 AA 字元畫模式。</p>
+        </div>
+
+        <!-- 建立新私密看板區塊 -->
+        <div class="mb-5 border border-[#8FA3B5] bg-[#E4E9F0] p-4">
+          <h2 class="font-bold text-base mb-2.5 text-[#144973]">▶ 建立新的私密「海豚堂」看板</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold mb-1">看板名稱（預設為：海豚堂）</label>
+              <input type="text" id="new-board-name" class="bbs-input w-full" value="海豚堂" placeholder="例如：海豚堂・深夜雜談分館" maxlength="40">
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1">看板副標題 / 歡迎標語（選填）</label>
+              <input type="text" id="new-board-subtitle" class="bbs-input w-full" value="只有收到專屬秘密連結的人才能進來的匿名小天地。" placeholder="顯示在看板標題下方的簡介標語" maxlength="80">
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1">預設匿名名稱（名無しさん設定）</label>
+              <input type="text" id="new-board-anon" class="bbs-input w-full" value="海豚堂的無名氏" maxlength="30">
+            </div>
+            <div class="pt-1">
+              <button id="btn-create-board" class="bbs-btn bbs-btn-primary w-full sm:w-auto py-1.5 px-4">
+                🐬 建立「海豚堂」並取得專屬私密邀請連結
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 輸入既有密鑰進入 -->
+        <div class="border border-[#8FA3B5] bg-[#E4E9F0] p-4">
+          <h2 class="font-bold text-base mb-2 text-gray-800">▶ 已有海豚堂邀請連結或密鑰代碼？</h2>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="join-room-input" class="bbs-input flex-1" placeholder="貼上專屬邀請網址或密鑰代碼（例如：dolphin-k8x9-m2p4-r7w1）">
+            <button id="btn-join-board" class="bbs-btn px-4">進入海豚堂</button>
+          </div>
+        </div>
+
+        <!-- 最近造訪過的本機記憶清單 -->
+        <div id="recent-boards-section" class="hidden mt-5 pt-3 border-t border-[#8FA3B5]">
+          <div class="text-xs font-bold text-gray-600 mb-1.5">※ 本次瀏覽開啟過的海豚堂捷徑（僅存於記憶體）：</div>
+          <div id="recent-boards-list" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       畫面 2：海豚堂 2ch 經典私密討論板主畫面 (?room=xxxx)
+       ========================================== -->
+  <div id="board-view" class="hidden max-w-4xl mx-auto my-2 sm:my-4 px-2 sm:px-4">
+    
+    <!-- 頂部深海藍橫幅與看板資訊區 -->
+    <div class="bbs-box mb-3 overflow-hidden">
+      <div class="bbs-header-bar px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="bg-[#23679E] border border-[#5B9BD5] px-1.5 py-0.5 font-bold">海豚堂 PRIVATE</span>
+          <span class="font-bold">非公開隱藏看板：唯有收到你分享專屬連結的人才能進入。</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span id="board-sync-badge" class="px-1.5 py-0.5 bg-[#0E3656] border border-[#4982B0] text-[11px]">同步中</span>
+          <button type="button" class="btn-open-cloud-wizard bbs-btn text-xs py-0.5">☁️ 雲端設定精靈</button>
+          <button id="btn-toggle-aa" class="bbs-btn text-xs py-0.5" title="切換等寬字型以正確顯示 ASCII Art 字元畫">AA字型：關</button>
+          <button id="btn-back-lobby" class="bbs-btn text-xs py-0.5">返回入口大廳</button>
+        </div>
+      </div>
+
+      <div class="p-3 sm:p-4">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-[#8FA3B5] pb-3">
+          <div class="flex items-start gap-3">
+            <!-- 海豚堂看板徽章 -->
+            <div class="w-11 h-11 bg-[#D6E6F2] border border-[#6E8594] flex items-center justify-center shrink-0 mt-0.5">
+              <svg viewBox="0 0 32 32" class="w-8 h-8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 19C6 13.5 11.5 9 18 9C22.5 9 25.5 11.5 27 14.5C28.5 15 30 15.5 30 16.5C30 17.5 28 18 26.5 18C25 20.5 22 22 18.5 22C16.5 22 14.5 21.5 13 20.5L9 24L10 19.5C7.5 19.5 6 19.2 6 19Z" fill="#144973"/>
+                <path d="M16 9L14 5L19 9.2" fill="#144973"/>
+                <path d="M6 19L3 16.5L4.5 19.5L2.5 22L6.5 20.5" fill="#144973"/>
+                <circle cx="24.5" cy="14.5" r="1.2" fill="#FFFFFF"/>
+              </svg>
+            </div>
+            <div>
+              <h1 id="board-title-display" class="text-xl sm:text-2xl font-bold text-[#144973]">海豚堂</h1>
+              <p id="board-subtitle-display" class="text-xs text-gray-700 mt-0.5"></p>
+              <div class="text-xs text-gray-600 mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>房間密鑰：<code id="room-key-display" class="bg-white border border-gray-300 px-1 font-mono font-bold text-black"></code></span>
+                <span>你的今日ID：<code id="user-daily-id-display" class="bg-white border border-gray-300 px-1 font-mono text-[#144973] font-bold">計算中...</code></span>
+                <span id="admin-badge" class="hidden bg-red-100 border border-red-400 text-red-800 px-1.5 font-bold">★ 板主管理模式</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 分享與管理按鈕群 -->
+          <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+            <button id="btn-copy-invite" class="bbs-btn bbs-btn-primary">
+              📋 一鍵複製海豚堂私密邀請連結
+            </button>
+            <button id="btn-admin-auth" class="bbs-btn">
+              🔑 板主驗證
+            </button>
+          </div>
+        </div>
+
+        <!-- 海豚堂ローカルルール (版規與公告欄，板主可編輯) -->
+        <div class="mt-2.5 bg-[#EDF3F8] border border-[#B0C4D1] p-2.5 text-xs">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-[#144973]">■ 海豚堂ローカルルール（版規與公告欄）</span>
+            <button id="btn-edit-rules" class="hidden bbs-btn text-xs py-0 px-2">✎ 編輯看板名稱/版規公告</button>
+          </div>
+          <div id="board-rules-display" class="whitespace-pre-wrap text-gray-700 leading-relaxed">歡迎來到海豚堂！請自由匿名討論，善用 >>樓層編號 引用與 sage 不推文功能。</div>
+        </div>
+
+        <!-- 新建看板時顯示一次的板主管理密碼提醒框 -->
+        <div id="admin-key-notice" class="hidden mt-3 bg-[#FFF0F0] border border-[#CC6666] p-2.5 text-xs">
+          <div class="font-bold text-[#990000] mb-1">【重要】你是此「海豚堂」看板的建立者，請妥善保存以下板主管理密碼：</div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span>板主管理密碼 (Admin Key)：</span>
+            <code id="created-admin-key" class="bg-white border border-red-300 px-2 py-0.5 font-mono font-bold text-sm select-all"></code>
+            <button id="btn-copy-admin-key" class="bbs-btn text-xs py-0.5">複製密碼</button>
+            <button id="btn-dismiss-admin-notice" class="bbs-btn text-xs py-0.5 ml-auto">我已記下，關閉提示</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 經典目錄導覽列 (スレ一覧) -->
+    <div class="bbs-box mb-4 p-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#8FA3B5] pb-2 mb-2">
+        <div class="font-bold text-sm text-[#144973]">
+          ■ スレ一覧（討論串目錄導覽） <span id="thread-count-badge" class="text-xs font-normal text-gray-600">(0 串)</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+          <button id="btn-toggle-compact" class="bbs-btn text-xs" title="切換顯示全部樓層或僅顯示首樓與最新 5 則回覆">顯示：全部樓層</button>
+          <input type="text" id="thread-search-input" class="bbs-input text-xs flex-1 sm:w-44" placeholder="搜尋討論串標題...">
+          <a href="#new-thread-section" class="bbs-btn text-xs whitespace-nowrap">↓ 開新討論串</a>
+        </div>
+      </div>
+
+      <!-- 討論串目錄連結清單 (含編號、標題、回覆數與最後更新時間) -->
+      <div id="thread-index-list" class="text-xs sm:text-[13px] leading-relaxed max-h-52 overflow-y-auto bg-[#E8EEF2] border border-[#B0C4D1] p-2 flex flex-wrap gap-x-4 gap-y-1.5">
+        <span class="text-gray-500">讀取討論串列表中...</span>
+      </div>
+    </div>
+
+    <!-- 檢視模式切換：顯示全部活躍討論串 或 單一討論串聚焦模式 -->
+    <div id="single-thread-banner" class="hidden bbs-box bg-[#FFFFEE] border-[#CCCC99] p-2.5 mb-3 flex items-center justify-between">
+      <span class="text-xs font-bold text-gray-800">目前正在單獨檢視指定討論串</span>
+      <button id="btn-show-all-threads" class="bbs-btn text-xs">顯示海豚堂內所有討論串</button>
+    </div>
+
+    <!-- 討論串主內容容器 -->
+    <div id="threads-container" class="space-y-5">
+      <!-- 動態渲染各個 2ch 討論串 -->
+    </div>
+
+    <!-- 開新討論串表單 (新規スレッド作成) -->
+    <div id="new-thread-section" class="bbs-box mt-6 mb-8 p-3 sm:p-4">
+      <div class="font-bold text-base text-[#144973] border-b border-[#8FA3B5] pb-1.5 mb-3">
+        ■ 新規スレッド作成（在海豚堂開設新討論串）
+      </div>
+      <form id="new-thread-form" class="space-y-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+          <label class="sm:col-span-2 text-xs font-bold">討論串標題：</label>
+          <div class="sm:col-span-10">
+            <input type="text" id="nt-title" class="bbs-input w-full" placeholder="請輸入討論串主題（必填）" required maxlength="80">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+          <label class="sm:col-span-2 text-xs font-bold">名字 (名前)：</label>
+          <div class="sm:col-span-4">
+            <input type="text" id="nt-name" class="bbs-input w-full" placeholder="留空為「海豚堂的無名氏」（可加 #密碼）" maxlength="40">
+          </div>
+          <label class="sm:col-span-2 text-xs font-bold sm:text-right">E-mail：</label>
+          <div class="sm:col-span-4">
+            <input type="text" id="nt-email" class="bbs-input w-full" placeholder="選填（如 sage）" maxlength="40">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-start">
+          <label class="sm:col-span-2 text-xs font-bold pt-1">內文 (本文)：</label>
+          <div class="sm:col-span-10">
+            <textarea id="nt-body" rows="5" class="bbs-input w-full font-mono" placeholder="請輸入 >>1 的開串內容...&#10;提示：輸入 >>數字 可引用特定樓層；貼上網址會自動轉為連結。" required maxlength="4000"></textarea>
+          </div>
+        </div>
+
+        <div class="sm:pl-[16.666%] flex flex-wrap items-center justify-between gap-2 pt-1">
+          <button type="submit" id="btn-submit-thread" class="bbs-btn bbs-btn-primary px-4 py-1">
+            新規スレッド作成（建立討論串）
+          </button>
+          <span class="text-xs text-gray-500">Tripcode 識別碼：輸入「海豚#密鑰」可生成 ◆專屬雜湊碼</span>
+        </div>
+      </form>
+    </div>
+
+    <!-- 頁尾版權與快速回頂部 -->
+    <div class="text-center text-xs text-gray-500 pb-8 space-y-1">
+      <div>- 海豚堂 (Dolphin Hall) Private 2ch-style BBS -</div>
+      <div><a href="#" class="anchor-link">▲ 回到頁面最上方</a></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK 與應用程式核心邏輯 -->
+  <script type="module">
+    import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, updateDoc, deleteDoc,
+      onSnapshot, collection, addDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // ==========================================
+    // 1. 雲端設定解析與雙模式儲存引擎 (雲端 Firestore 優先 / 本機記憶體備援)
+    // ==========================================
+    // 若使用者透過「雲端設定精靈」匯出專屬 HTML，以下標記區塊會自動填入該設定
+    /* __DOLPHIN_EMBEDDED_CONFIG_START__ */
+    const EMBEDDED_FIREBASE_CONFIG = null;
+    /* __DOLPHIN_EMBEDDED_CONFIG_END__ */
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'dolphin-hall-bbs';
+
+    let firebaseApp = null;
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let useCloudMode = false;
+    let customCloudConfig = null;
+
+    // 記憶體備援資料庫（當未設定 Firebase 且無環境預設雲端時，保證單機測試完全流暢）
+    const memoryStore = {
+      boards: {},   // { roomKey: metaObj }
+      threads: {},  // { roomKey: { threadId: threadObj } }
+      posts: {}     // { roomKey: { postId: postObj } }
+    };
+    const memoryListeners = [];
+
+    function notifyMemoryListeners() {
+      memoryListeners.forEach(fn => {
+        try { fn(); } catch (e) { console.error(e); }
+      });
+    }
+
+    // 解析使用者貼上的 Firebase Config 文字
+    function parseFirebaseConfigInput(rawText) {
+      if (!rawText || !rawText.trim()) return null;
+      let cleaned = rawText.trim();
+      // 支援直接貼上 JS 變數宣告 `const firebaseConfig = { ... };`
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+      }
+      // 嘗試標準 JSON 解析，若失敗則將無引號的 key 補上雙引號後再解析
+      try {
+        const obj = JSON.parse(cleaned);
+        if (obj && obj.apiKey && obj.projectId) return obj;
+      } catch (_) {
+        const jsonified = cleaned
+          .replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+          .replace(/'/g, '"')
+          .replace(/,\s*}/g, '}');
+        const obj = JSON.parse(jsonified);
+        if (obj && obj.apiKey && obj.projectId) return obj;
+      }
+      throw new Error('格式無法識別，請確認包含 apiKey 與 projectId');
+    }
+
+    // 取得目前可用的 Firebase 設定
+    function resolveActiveFirebaseConfig() {
+      if (customCloudConfig) return customCloudConfig;
+      if (EMBEDDED_FIREBASE_CONFIG && EMBEDDED_FIREBASE_CONFIG.apiKey) return EMBEDDED_FIREBASE_CONFIG;
+      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        try {
+          const parsed = JSON.parse(__firebase_config);
+          if (parsed && parsed.apiKey) return parsed;
+        } catch (e) {
+          console.warn('環境變數解析失敗:', e);
+        }
+      }
+      return null;
+    }
+
+    // 更新畫面上的同步狀態徽章
+    function updateSyncStatusBadges() {
+      const lobbyBadge = document.getElementById('lobby-sync-badge');
+      const boardBadge = document.getElementById('board-sync-badge');
+      const statusBox = document.getElementById('cloud-status-box');
+
+      if (useCloudMode && currentUser) {
+        if (lobbyBadge) {
+          lobbyBadge.textContent = '🟢 雲端即時連線中';
+          lobbyBadge.className = 'px-2 py-0.5 bg-[#124D2A] border border-[#3FA366] text-[#D4FFE4] text-[11px] font-bold';
+        }
+        if (boardBadge) {
+          boardBadge.textContent = '🟢 多人雲端同步中';
+          boardBadge.className = 'px-1.5 py-0.5 bg-[#124D2A] border border-[#3FA366] text-[#D4FFE4] text-[11px] font-bold';
+        }
+        if (statusBox) {
+          statusBox.innerHTML = `<span class="font-bold text-green-800">🟢 目前狀態：已連接雲端即時資料庫</span><br>所有收到你分享連結的朋友，在手機或電腦上都能即時看到彼此的新討論串與留言！`;
+        }
+      } else {
+        if (lobbyBadge) {
+          lobbyBadge.textContent = '🟡 單機預覽模式 (點右側開啟多人雲端)';
+          lobbyBadge.className = 'px-2 py-0.5 bg-[#5C450B] border border-[#D4A42A] text-[#FFF3C4] text-[11px]';
+        }
+        if (boardBadge) {
+          boardBadge.textContent = '🟡 單機預覽模式';
+          boardBadge.className = 'px-1.5 py-0.5 bg-[#5C450B] border border-[#D4A42A] text-[#FFF3C4] text-[11px]';
+        }
+        if (statusBox) {
+          statusBox.innerHTML = `<span class="font-bold text-amber-800">🟡 目前狀態：單機體驗模式（資料暫存於目前分頁記憶體）</span><br>若要正式上架並讓朋友在不同裝置即時聊天，請在下方貼上免費 Firebase Config 並匯出專屬 HTML 上傳至 Netlify Drop / GitHub Pages。`;
+        }
+      }
+    }
+
+    // 初始化連線（雲端優先，若無雲端設定則無縫切換為本機記憶體模式）
+    async function initConnectionEngine() {
+      const config = resolveActiveFirebaseConfig();
+      if (firebaseApp) {
+        try { await deleteApp(firebaseApp); } catch (_) {}
+        firebaseApp = null;
+        db = null;
+        auth = null;
+        currentUser = null;
+        useCloudMode = false;
+      }
+
+      if (config) {
+        try {
+          firebaseApp = initializeApp(config, 'dolphin-hall-' + Date.now());
+          db = getFirestore(firebaseApp);
+          auth = getAuth(firebaseApp);
+
+          if (!customCloudConfig && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+          currentUser = auth.currentUser;
+          useCloudMode = !!currentUser;
+        } catch (err) {
+          console.error('雲端初始化失敗，切換為本機預覽模式:', err);
+          useCloudMode = false;
+          showToast('雲端連線失敗，已切換為單機預覽模式（請檢查設定精靈）。');
+        }
+      }
+
+      updateSyncStatusBadges();
+    }
+
+    // ==========================================
+    // 2. 應用程式狀態與工具函數
+    // ==========================================
+    const state = {
+      roomKey: null,
+      boardMeta: null,
+      threads: [],          // 討論串列表
+      postsByThread: {},    // { threadId: [post1, post2, ...] }
+      unsubscribes: [],     // 監聽器清理陣列
+      isAdmin: false,
+      focusedThreadId: null,
+      compactMode: false,   // false = 顯示全部樓層, true = 僅顯示 >>1 與最新 5 則回覆
+      aaFontMode: false,    // AA 字元畫等寬字型開關
+      searchQuery: '',
+      dailyUserId: '',
+      sessionBoards: []     // 本次瀏覽開啟過的海豚堂捷徑（僅存記憶體）
+    };
+
+    // 自訂 Toast 通知 (取代 alert)
+    let toastTimer = null;
+    function showToast(msg, duration = 3400) {
+      const el = document.getElementById('toast-banner');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.opacity = '1';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.classList.add('hidden'), 260);
+      }, duration);
+    }
+
+    // 自訂 Modal 對話框 (取代 confirm / prompt)
+    function showCustomModal({
+      title = '提示',
+      message = '',
+      showInput = false,
+      inputPlaceholder = '',
+      inputValue = '',
+      confirmText = '確定',
+      cancelText = '取消'
+    }) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-modal');
+        const titleEl = document.getElementById('modal-title');
+        const msgEl = document.getElementById('modal-message');
+        const inputEl = document.getElementById('modal-input');
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        const cancelBtn = document.getElementById('modal-cancel-btn');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        confirmBtn.textContent = confirmText;
+        cancelBtn.textContent = cancelText;
+
+        if (showInput) {
+          inputEl.classList.remove('hidden');
+          inputEl.value = inputValue;
+          inputEl.placeholder = inputPlaceholder;
+        } else {
+          inputEl.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+        if (showInput) setTimeout(() => inputEl.focus(), 50);
+
+        const cleanup = () => {
+          modal.classList.add('hidden');
+          confirmBtn.removeEventListener('click', onConfirm);
+          cancelBtn.removeEventListener('click', onCancel);
+          inputEl.removeEventListener('keydown', onKeyDown);
+        };
+
+        const onConfirm = () => {
+          const val = inputEl.value;
+          cleanup();
+          resolve({ confirmed: true, value: val });
+        };
+
+        const onCancel = () => {
+          cleanup();
+          resolve({ confirmed: false, value: null });
+        };
+
+        const onKeyDown = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onConfirm();
+          }
+        };
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+        inputEl.addEventListener('keydown', onKeyDown);
+      });
+    }
+
+    // 複製文字到剪貼簿 (相容 iFrame 環境)
+    function copyTextToClipboard(text, successMessage) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMessage || '已複製到剪貼簿！');
+      } catch (err) {
+        showToast('複製失敗，請手動選取複製。');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // 雜湊演算法 (用於每日固定 ID 與 Tripcode)
+    function simpleHash(str) {
+      let h1 = 0xdeadbeef ^ str.length;
+      let h2 = 0x41c6ce57 ^ str.length;
+      for (let i = 0; i < str.length; i++) {
+        const ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      const combined = (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36).toUpperCase();
+      return combined.padStart(10, '0');
+    }
+
+    // 產生瀏覽器特徵碼 + 當日日期 + 看板密鑰的 8 碼每日固定 ID
+    function computeDailyUserId(roomKey) {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const browserSignature = [
+        navigator.userAgent || '',
+        navigator.language || '',
+        screen.width + 'x' + screen.height,
+        Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        currentUser?.uid || 'guest-dolphin'
+      ].join('|');
+      const raw = `${browserSignature}|${today}|${roomKey}`;
+      return simpleHash(raw).slice(0, 8);
+    }
+
+    // 解析名前與 Tripcode (例如: "海豚#1234" -> { displayName: "海豚", tripcode: "◆A8K9M2PX" })
+    function parseNameAndTripcode(rawName, defaultAnon) {
+      const trimmed = (rawName || '').trim();
+      if (!trimmed) {
+        return { displayName: defaultAnon || '海豚堂的無名氏', tripcode: '' };
+      }
+      const hashIndex = trimmed.indexOf('#');
+      if (hashIndex === -1) {
+        return { displayName: trimmed, tripcode: '' };
+      }
+      const baseName = trimmed.slice(0, hashIndex).trim();
+      const secret = trimmed.slice(hashIndex + 1);
+      if (!secret) {
+        return { displayName: baseName || defaultAnon, tripcode: '' };
+      }
+      const tripHash = simpleHash('dolphin_trip_' + secret + '_2ch').slice(0, 8).toUpperCase();
+      return {
+        displayName: baseName,
+        tripcode: `◆${tripHash}`
+      };
+    }
+
+    // 格式化 2ch 經典日期時間：2026/11/23(月) 02:23:34.56
+    function format2chDate(timestampMs) {
+      const d = new Date(timestampMs || Date.now());
+      const days = ['日', '月', '火', '水', '木', '金', '土'];
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const dayChar = days[d.getDay()];
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      const cs = String(Math.floor(d.getMilliseconds() / 10)).padStart(2, '0');
+      return `${yyyy}/${mm}/${dd}(${dayChar}) ${hh}:${min}:${ss}.${cs}`;
+    }
+
+    // 格式化精簡最後更新時間 (用於討論串目錄列表)
+    function formatShortTime(timestampMs) {
+      if (!timestampMs) return '';
+      const d = new Date(timestampMs);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${mm}/${dd} ${hh}:${min}`;
+    }
+
+    // 產生高強度隨機海豚堂私密頻道代碼 (dolphin-xxxx-xxxx-xxxx)
+    function generateRoomKey() {
+      const chars = 'abcdefghijkmnopqrstuvwxyz23456789';
+      const part = (len) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      return `dolphin-${part(4)}-${part(4)}-${part(4)}`;
+    }
+
+    // 產生板主管理密碼 (DOL-XXXXXXXX)
+    function generateAdminKey() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      return 'DOL-' + Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    // HTML 跳脫防 XSS
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // 解析內文中的 >>1 引用語法與一般網址連結
+    function formatPostBody(rawText, threadId) {
+      let escaped = escapeHtml(rawText || '');
+
+      // 自動將 http/https 網址轉為可點擊連結
+      escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="anchor-link break-all">${url}</a>`;
+      });
+
+      // 將 &gt;&gt;數字 轉為可懸浮預覽與跳轉的 Anchor 標籤
+      escaped = escaped.replace(/&gt;&gt;(\d{1,4})/g, (match, numStr) => {
+        return `<span class="anchor-link post-anchor" data-thread-id="${threadId}" data-target-num="${numStr}">&gt;&gt;${numStr}</span>`;
+      });
+
+      return escaped;
+    }
+
+    // ==========================================
+    // 3. 資料存取抽象層 (雲端 Firestore / 記憶體同步介面)
+    // ==========================================
+    function getBoardDocRef(roomKey) {
+      return doc(db, 'artifacts', appId, 'public', 'data', `bbs_${roomKey}_meta`, 'info');
+    }
+    function getThreadsCollectionRef(roomKey) {
+      return collection(db, 'artifacts', appId, 'public', 'data', `bbs_${roomKey}_threads`);
+    }
+    function getPostsCollectionRef(roomKey) {
+      return collection(db, 'artifacts', appId, 'public', 'data', `bbs_${roomKey}_posts`);
+    }
+
+    async function saveBoardMeta(roomKey, metaObj) {
+      if (useCloudMode && currentUser) {
+        await setDoc(getBoardDocRef(roomKey), metaObj);
+      } else {
+        memoryStore.boards[roomKey] = { ...metaObj };
+        notifyMemoryListeners();
+      }
+    }
+
+    async function updateBoardMeta(roomKey, updates) {
+      if (useCloudMode && currentUser) {
+        await updateDoc(getBoardDocRef(roomKey), updates);
+      } else if (memoryStore.boards[roomKey]) {
+        Object.assign(memoryStore.boards[roomKey], updates);
+        notifyMemoryListeners();
+      }
+    }
+
+    async function createThreadRecord(roomKey, threadData) {
+      if (useCloudMode && currentUser) {
+        const ref = await addDoc(getThreadsCollectionRef(roomKey), threadData);
+        return ref.id;
+      } else {
+        const id = 'thr_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        if (!memoryStore.threads[roomKey]) memoryStore.threads[roomKey] = {};
+        memoryStore.threads[roomKey][id] = { id, ...threadData };
+        notifyMemoryListeners();
+        return id;
+      }
+    }
+
+    async function updateThreadRecord(roomKey, threadId, updates) {
+      if (useCloudMode && currentUser) {
+        const ref = doc(db, 'artifacts', appId, 'public', 'data', `bbs_${roomKey}_threads`, threadId);
+        await updateDoc(ref, updates);
+      } else if (memoryStore.threads[roomKey]?.[threadId]) {
+        Object.assign(memoryStore.threads[roomKey][threadId], updates);
+        notifyMemoryListeners();
+      }
+    }
+
+    async function deleteThreadRecord(roomKey, threadId) {
+      if (useCloudMode && currentUser) {
+        const ref = doc(db, 'artifacts', appId, 'public', 'data', `bbs_${roomKey}_threads`, threadId);
+        await deleteDoc(ref);
+      } else if (memoryStore.threads[roomKey]?.[threadId]) {
+        delete memoryStore.threads[roomKey][threadId];
+        notifyMemoryListeners();
+      }
+    }
+
+    async function createPostRecord(roomKey, postData) {
+      if (useCloudMode && currentUser) {
+        const ref = await addDoc(getPostsCollectionRef(roomKey), postData);
+        return ref.id;
+      } else {
+        const id = 'pst_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        if (!memoryStore.posts[roomKey]) memoryStore.posts[roomKey] = {};
+        memoryStore.posts[roomKey][id] = { id, ...postData };
+        notifyMemoryListeners();
+        return id;
+      }
+    }
+
+    async function updatePostRecord(roomKey, postId, updates) {
+      if (useCloudMode && currentUser) {
+        const ref = doc(db, 'artifacts', appId, 'public', 'data', `bbs_${roomKey}_posts`, postId);
+        await updateDoc(ref, updates);
+      } else if (memoryStore.posts[roomKey]?.[postId]) {
+        Object.assign(memoryStore.posts[roomKey][postId], updates);
+        notifyMemoryListeners();
+      }
+    }
+
+    // ==========================================
+    // 4. 路由與視圖切換 (入口大廳 vs 私密海豚堂看板)
+    // ==========================================
+    function clearSubscriptions() {
+      state.unsubscribes.forEach(fn => {
+        try { fn(); } catch (_) {}
+      });
+      state.unsubscribes = [];
+      memoryListeners.length = 0;
+    }
+
+    function recordSessionBoard(roomKey, boardName) {
+      const existingIdx = state.sessionBoards.findIndex(b => b.roomKey === roomKey);
+      if (existingIdx !== -1) {
+        state.sessionBoards[existingIdx].name = boardName;
+      } else {
+        state.sessionBoards.unshift({ roomKey, name: boardName });
+      }
+    }
+
+    function renderLobby() {
+      document.getElementById('lobby-view').classList.remove('hidden');
+      document.getElementById('board-view').classList.add('hidden');
+      updateSyncStatusBadges();
+
+      const recentSec = document.getElementById('recent-boards-section');
+      const recentList = document.getElementById('recent-boards-list');
+      if (state.sessionBoards.length > 0) {
+        recentSec.classList.remove('hidden');
+        recentList.innerHTML = state.sessionBoards.map(b => `
+          <button type="button" class="bbs-btn text-xs" data-enter-room="${escapeHtml(b.roomKey)}">
+            🐬 ${escapeHtml(b.name)} (${escapeHtml(b.roomKey)})
+          </button>
+        `).join('');
+      } else {
+        recentSec.classList.add('hidden');
+      }
+    }
+
+    // 進入指定的私密海豚堂看板
+    async function enterBoard(roomKey, newlyCreatedAdminKey = null) {
+      clearSubscriptions();
+      state.roomKey = roomKey;
+      state.focusedThreadId = null;
+      state.searchQuery = '';
+      state.threads = [];
+      state.postsByThread = {};
+      state.dailyUserId = computeDailyUserId(roomKey);
+
+      // 更新網址列查詢參數 (?room=xxxx)
+      const url = new URL(window.location.href);
+      url.searchParams.set('room', roomKey);
+      window.history.replaceState({}, '', url.toString());
+
+      document.getElementById('lobby-view').classList.add('hidden');
+      document.getElementById('board-view').classList.remove('hidden');
+      document.getElementById('room-key-display').textContent = roomKey;
+      document.getElementById('user-daily-id-display').textContent = state.dailyUserId;
+      updateSyncStatusBadges();
+
+      // 若是剛剛新建看板，顯示板主密碼並自動開啟管理權限
+      if (newlyCreatedAdminKey) {
+        state.isAdmin = true;
+        document.getElementById('admin-badge').classList.remove('hidden');
+        document.getElementById('btn-edit-rules').classList.remove('hidden');
+        document.getElementById('admin-key-notice').classList.remove('hidden');
+        document.getElementById('created-admin-key').textContent = newlyCreatedAdminKey;
+      } else {
+        state.isAdmin = false;
+        document.getElementById('admin-badge').classList.add('hidden');
+        document.getElementById('btn-edit-rules').classList.add('hidden');
+        document.getElementById('admin-key-notice').classList.add('hidden');
+      }
+
+      const applyBoardMetaToUI = (meta) => {
+        state.boardMeta = meta;
+        document.getElementById('board-title-display').textContent = meta.name || '海豚堂';
+        document.getElementById('board-subtitle-display').textContent = meta.subtitle || '';
+        document.getElementById('board-rules-display').textContent = meta.rules || '歡迎來到海豚堂！';
+        document.title = `${meta.name || '海豚堂'}｜私密匿名文字討論板`;
+        document.getElementById('nt-name').placeholder = `留空為「${meta.defaultAnon || '海豚堂的無名氏'}」（可加 #密碼）`;
+        recordSessionBoard(roomKey, meta.name || '海豚堂');
+      };
+
+      const ensureDefaultBoardIfMissing = async () => {
+        const now = Date.now();
+        const defaultMeta = {
+          name: '海豚堂',
+          subtitle: '只有收到專屬秘密連結的人才能進來的匿名小天地。',
+          rules: '歡迎來到海豚堂！請自由匿名討論，善用 >>樓層編號 引用與 sage 不推文功能。',
+          defaultAnon: '海豚堂的無名氏',
+          adminKey: generateAdminKey(),
+          createdAt: now
+        };
+        await saveBoardMeta(roomKey, defaultMeta);
+
+        // 自動建立開館歡迎討論串
+        const welcomeThreadId = await createThreadRecord(roomKey, {
+          title: '【海豚堂】私密匿名看板開張！日常雜談與簽到串 ★1',
+          createdAt: now,
+          bumpedAt: now,
+          lastReplyAt: now,
+          postCount: 1,
+          isLocked: false
+        });
+
+        await createPostRecord(roomKey, {
+          threadId: welcomeThreadId,
+          postNum: 1,
+          name: '海豚堂管理人',
+          tripcode: '◆DOLPHIN',
+          email: '',
+          dateStr: format2chDate(now),
+          dailyId: 'DOLPHIN1',
+          body: `歡迎來到專屬的私密匿名討論板「海豚堂」！\n\n■ 海豚堂使用指南：\n1. 點擊上方「一鍵複製海豚堂私密邀請連結」，把網址傳給你想邀請的朋友；沒有連結的人完全無法搜尋或進入這裡。\n2. 點擊樓層數字（例如左上的 1）可以快速在回覆框插入 >>1 引用；滑鼠移至 >>數字 上可浮動預覽該樓層內容。\n3. 在名字欄輸入「海豚#密碼」可以產生專屬識別碼（Tripcode）。\n4. 勾選「不推文 (sage)」或於 E-mail 欄填寫 sage，回覆時不會將該討論串推到最上方。\n5. 若要張貼 ASCII Art 字元畫，可點擊右上角「AA字型」切換為等寬字型顯示。`,
+          createdAt: now,
+          isDeleted: false
+        });
+      };
+
+      if (useCloudMode && currentUser) {
+        // 1. 雲端監聽看板設定 (Meta)
+        const unsubBoard = onSnapshot(getBoardDocRef(roomKey), async (snap) => {
+          if (!snap.exists()) {
+            await ensureDefaultBoardIfMissing();
+            return;
+          }
+          applyBoardMetaToUI(snap.data());
+        }, (err) => {
+          console.error('看板讀取錯誤:', err);
+          showToast('讀取海豚堂看板資訊發生錯誤，請檢查雲端權限或連線。');
+        });
+        state.unsubscribes.push(unsubBoard);
+
+        // 2. 雲端監聽所有討論串
+        const unsubThreads = onSnapshot(getThreadsCollectionRef(roomKey), (snap) => {
+          const list = [];
+          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          list.sort((a, b) => (b.bumpedAt || b.createdAt || 0) - (a.bumpedAt || a.createdAt || 0));
+          state.threads = list;
+          renderBoardUI();
+        }, (err) => {
+          console.error('討論串讀取錯誤:', err);
+        });
+        state.unsubscribes.push(unsubThreads);
+
+        // 3. 雲端監聽所有樓層回覆
+        const unsubPosts = onSnapshot(getPostsCollectionRef(roomKey), (snap) => {
+          const grouped = {};
+          snap.forEach(d => {
+            const p = { id: d.id, ...d.data() };
+            if (!grouped[p.threadId]) grouped[p.threadId] = [];
+            grouped[p.threadId].push(p);
+          });
+          Object.keys(grouped).forEach(tid => {
+            grouped[tid].sort((a, b) => (a.postNum || 0) - (b.postNum || 0));
+          });
+          state.postsByThread = grouped;
+          renderBoardUI();
+        }, (err) => {
+          console.error('樓層讀取錯誤:', err);
+        });
+        state.unsubscribes.push(unsubPosts);
+      } else {
+        // 記憶體同步監聽器
+        const syncFromMemory = async () => {
+          const meta = memoryStore.boards[roomKey];
+          if (!meta) {
+            await ensureDefaultBoardIfMissing();
+            return;
+          }
+          applyBoardMetaToUI(meta);
+
+          const rawThreads = Object.values(memoryStore.threads[roomKey] || {});
+          rawThreads.sort((a, b) => (b.bumpedAt || b.createdAt || 0) - (a.bumpedAt || a.createdAt || 0));
+          state.threads = rawThreads;
+
+          const grouped = {};
+          Object.values(memoryStore.posts[roomKey] || {}).forEach(p => {
+            if (!grouped[p.threadId]) grouped[p.threadId] = [];
+            grouped[p.threadId].push(p);
+          });
+          Object.keys(grouped).forEach(tid => {
+            grouped[tid].sort((a, b) => (a.postNum || 0) - (b.postNum || 0));
+          });
+          state.postsByThread = grouped;
+          renderBoardUI();
+        };
+
+        memoryListeners.push(syncFromMemory);
+        await syncFromMemory();
+      }
+    }
+
+    // ==========================================
+    // 5. 渲染 2ch 討論串列表與樓層內容
+    // ==========================================
+    function renderBoardUI() {
+      const indexListEl = document.getElementById('thread-index-list');
+      const countBadgeEl = document.getElementById('thread-count-badge');
+      const threadsContainerEl = document.getElementById('threads-container');
+      const singleBannerEl = document.getElementById('single-thread-banner');
+
+      const queryLower = state.searchQuery.toLowerCase();
+      const filteredThreads = state.threads.filter(t =>
+        !queryLower || (t.title || '').toLowerCase().includes(queryLower)
+      );
+
+      countBadgeEl.textContent = `(${filteredThreads.length} 串)`;
+
+      // 1. 渲染頂部「スレ一覧 (討論串目錄導覽，含編號、標題、回覆數與最後更新時間)」
+      if (filteredThreads.length === 0) {
+        indexListEl.innerHTML = `<span class="text-gray-500">目前尚無任何討論串。請在下方「新規スレッド作成」建立海豚堂的第一個話題！</span>`;
+      } else {
+        indexListEl.innerHTML = filteredThreads.map((t, idx) => {
+          const posts = state.postsByThread[t.id] || [];
+          const count = posts.length || t.postCount || 1;
+          const isFull = count >= 1000;
+          const lockIcon = (t.isLocked || isFull) ? '🔒' : '';
+          const lastTime = formatShortTime(t.lastReplyAt || t.bumpedAt || t.createdAt);
+          return `
+            <a href="#thread-${t.id}" class="anchor-link whitespace-nowrap" data-jump-thread="${t.id}" title="最後更新：${lastTime}">
+              ${idx + 1}: ${lockIcon}${escapeHtml(t.title)} (${count}) <span class="text-[11px] text-gray-500 no-underline">[${lastTime}]</span>
+            </a>
+          `;
+        }).join('');
+      }
+
+      // 2. 決定要顯示哪些討論串內容 (全部或單一聚焦)
+      let displayThreads = filteredThreads;
+      if (state.focusedThreadId) {
+        displayThreads = state.threads.filter(t => t.id === state.focusedThreadId);
+        singleBannerEl.classList.remove('hidden');
+      } else {
+        singleBannerEl.classList.add('hidden');
+      }
+
+      // 3. 渲染各討論串區塊與內部樓層
+      if (displayThreads.length === 0) {
+        threadsContainerEl.innerHTML = `
+          <div class="bbs-box p-6 text-center text-gray-600">
+            沒有符合條件的討論串。
+          </div>
+        `;
+        return;
+      }
+
+      threadsContainerEl.innerHTML = displayThreads.map((thread) => {
+        const allPosts = state.postsByThread[thread.id] || [];
+        const isFull = allPosts.length >= 1000;
+        const isLocked = !!thread.isLocked || isFull;
+
+        // 精簡模式邏輯：非單串聚焦且開啟「最新回覆預覽」時，僅顯示 >>1 與最後 5 則回覆
+        let visiblePosts = allPosts;
+        let omittedCount = 0;
+        if (state.compactMode && !state.focusedThreadId && allPosts.length > 6) {
+          visiblePosts = [allPosts[0], ...allPosts.slice(-5)];
+          omittedCount = allPosts.length - 6;
+        }
+
+        // 渲染每一層樓 (レス)
+        const postsHtml = visiblePosts.map((post, vIdx) => {
+          const isDeleted = !!post.isDeleted;
+          const emailDisplay = post.email ? `<span class="text-xs text-gray-500 ml-1">[${escapeHtml(post.email)}]</span>` : '';
+          const tripHtml = post.tripcode ? `<span class="res-trip ml-0.5">${escapeHtml(post.tripcode)}</span>` : '';
+          const adminDelBtn = (state.isAdmin && !isDeleted)
+            ? `<button type="button" class="text-xs text-red-700 underline ml-2 hover:bg-red-100 px-1" data-action="delete-post" data-post-id="${post.id}" data-post-num="${post.postNum}">[あぼーん刪除]</button>`
+            : '';
+
+          const omittedBanner = (vIdx === 1 && omittedCount > 0)
+            ? `<div class="my-2 px-3 py-1 bg-[#E4E9F0] border border-dashed border-[#8FA3B5] text-xs text-gray-600 flex items-center justify-between">
+                <span>…… 中間省略了 ${omittedCount} 則回覆 ……</span>
+                <button type="button" class="anchor-link font-bold" data-action="focus-thread" data-thread-id="${thread.id}">展開全部 ${allPosts.length} 樓</button>
+              </div>`
+            : '';
+
+          return `
+            ${omittedBanner}
+            <div class="res-item mb-3" id="res-${thread.id}-${post.postNum}">
+              <div class="text-xs sm:text-[13px] leading-snug">
+                <span class="res-num" title="點擊引用 >>${post.postNum}" data-action="quote-post" data-thread-id="${thread.id}" data-post-num="${post.postNum}">${post.postNum}</span>
+                <span> 名前：</span>
+                <span class="res-name">${escapeHtml(post.name || '海豚堂的無名氏')}</span>${tripHtml}${emailDisplay}
+                <span class="text-[#555555] ml-1">：${escapeHtml(post.dateStr || '')} ID:${escapeHtml(post.dailyId || '????????')}</span>
+                ${adminDelBtn}
+              </div>
+              <div class="res-body ${isDeleted ? 'text-gray-400 italic' : ''}">${isDeleted ? 'あぼーん（此樓層已被板主刪除）' : formatPostBody(post.body, thread.id)}</div>
+            </div>
+          `;
+        }).join('');
+
+        // 板主操作控制列 (鎖定討論串 / 刪除整串)
+        const adminThreadControls = state.isAdmin ? `
+          <div class="flex items-center gap-1.5">
+            <button type="button" class="bbs-btn text-xs py-0.5" data-action="toggle-lock" data-thread-id="${thread.id}" data-locked="${!!thread.isLocked}">
+              ${thread.isLocked ? '🔓 解除鎖定' : '🔒 鎖定此串'}
+            </button>
+            <button type="button" class="bbs-btn bbs-btn-danger text-xs py-0.5" data-action="delete-thread" data-thread-id="${thread.id}">
+              🗑 刪除整串
+            </button>
+          </div>
+        ` : '';
+
+        // 討論串專屬快速回覆表單
+        const replyFormHtml = isLocked ? `
+          <div class="mt-3 pt-2 border-t border-[#8FA3B5] text-xs text-red-700 font-bold">
+            ※ ${isFull ? '此討論串已達 1000 樓上限（1000 Over），請開設新討論串繼續話題。' : '此討論串已被板主鎖定，無法繼續寫入回覆。'}
+          </div>
+        ` : `
+          <form class="reply-form mt-3 pt-3 border-t border-[#8FA3B5] space-y-2" data-thread-id="${thread.id}">
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="submit" class="bbs-btn font-bold">寫入回覆 (書き込む)</button>
+              <div class="flex items-center gap-1">
+                <label class="text-xs">名前：</label>
+                <input type="text" name="name" class="bbs-input w-32 sm:w-44" placeholder="預設無名氏 / #密碼" maxlength="40">
+              </div>
+              <div class="flex items-center gap-1">
+                <label class="text-xs">E-mail：</label>
+                <input type="text" name="email" class="bbs-input w-24 sm:w-32" placeholder="sage" maxlength="40">
+              </div>
+              <label class="inline-flex items-center gap-1 text-xs cursor-pointer select-none bg-[#E4E9F0] border border-[#8FA3B5] px-2 py-0.5 rounded-sm" title="勾選後回覆不會將此討論串推到最上方">
+                <input type="checkbox" name="sageCheck" class="accent-[#144973]">
+                <span>不推文 (sage)</span>
+              </label>
+            </div>
+            <div>
+              <textarea name="body" rows="3" class="bbs-input w-full sm:w-4/5 font-mono" placeholder="輸入回覆內容... (點擊上方樓層數字可快速插入 >>樓層編號)" required maxlength="4000"></textarea>
+            </div>
+          </form>
+        `;
+
+        return `
+          <article id="thread-${thread.id}" class="bbs-box p-3 sm:p-4">
+            <!-- 討論串標題與功能列 -->
+            <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#8FA3B5] pb-2 mb-3">
+              <h2 class="thread-title">
+                ${isLocked ? '<span class="text-sm text-gray-600 mr-1">[鎖定]</span>' : ''}${escapeHtml(thread.title)}
+                <span class="text-xs font-normal text-gray-600 ml-1">(${allPosts.length} 則回覆)</span>
+              </h2>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" class="bbs-btn text-xs py-0.5" data-action="focus-thread" data-thread-id="${thread.id}">
+                  ${state.focusedThreadId === thread.id ? '顯示全部討論串' : '只看此串'}
+                </button>
+                ${adminThreadControls}
+              </div>
+            </div>
+
+            <!-- 所有樓層列表 -->
+            <div class="posts-list">
+              ${postsHtml || '<div class="text-xs text-gray-500">載入樓層中...</div>'}
+            </div>
+
+            <!-- 回覆表單 -->
+            ${replyFormHtml}
+          </article>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // 6. 建立看板、開新討論串、回覆 (age/sage) 與板主管理功能
+    // ==========================================
+    document.getElementById('btn-create-board').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-create-board');
+      btn.disabled = true;
+
+      try {
+        const nameInput = document.getElementById('new-board-name').value.trim();
+        const subtitleInput = document.getElementById('new-board-subtitle').value.trim();
+        const anonInput = document.getElementById('new-board-anon').value.trim();
+        const roomKey = generateRoomKey();
+        const adminKey = generateAdminKey();
+        const now = Date.now();
+
+        const boardMeta = {
+          name: nameInput || '海豚堂',
+          subtitle: subtitleInput || '只有收到專屬秘密連結的人才能進來的匿名小天地。',
+          rules: '歡迎來到海豚堂！請自由匿名討論，善用 >>樓層編號 引用與 sage 不推文功能。',
+          defaultAnon: anonInput || '海豚堂的無名氏',
+          adminKey: adminKey,
+          createdAt: now
+        };
+
+        await saveBoardMeta(roomKey, boardMeta);
+
+        // 自動建立一串預設的「海豚堂開館歡迎串」
+        const welcomeThreadId = await createThreadRecord(roomKey, {
+          title: '【海豚堂】私密匿名看板開張！日常雜談與簽到串 ★1',
+          createdAt: now,
+          bumpedAt: now,
+          lastReplyAt: now,
+          postCount: 1,
+          isLocked: false
+        });
+
+        await createPostRecord(roomKey, {
+          threadId: welcomeThreadId,
+          postNum: 1,
+          name: '海豚堂管理人',
+          tripcode: '◆DOLPHIN',
+          email: '',
+          dateStr: format2chDate(now),
+          dailyId: 'DOLPHIN1',
+          body: `歡迎來到專屬的私密匿名討論板「${boardMeta.name}」！\n\n■ 海豚堂使用指南：\n1. 點擊上方「一鍵複製海豚堂私密邀請連結」，把網址傳給你想邀請的朋友；沒有連結的人完全無法搜尋或進入這裡。\n2. 點擊樓層數字（例如左上的 1）可以快速在回覆框插入 >>1 引用；滑鼠移至 >>數字 上可浮動預覽該樓層內容。\n3. 在名字欄輸入「海豚#密碼」可以產生專屬識別碼（Tripcode）。\n4. 勾選「不推文 (sage)」或於 E-mail 欄填寫 sage，回覆時不會將該討論串推到最上方。\n5. 若要張貼 ASCII Art 字元畫，可點擊右上角「AA字型」切換為等寬字型顯示。`,
+          createdAt: now,
+          isDeleted: false
+        });
+
+        showToast('「海豚堂」私密看板建立成功！請複製專屬連結分享給朋友。');
+        await enterBoard(roomKey, adminKey);
+      } catch (err) {
+        console.error('建立看板失敗:', err);
+        showToast('建立看板時發生錯誤，請稍後重試。');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // 入口大廳：輸入密鑰或貼上完整邀請網址進入
+    document.getElementById('btn-join-board').addEventListener('click', () => {
+      const raw = document.getElementById('join-room-input').value.trim();
+      if (!raw) {
+        showToast('請輸入海豚堂專屬邀請網址或密鑰代碼！');
+        return;
+      }
+      let roomKey = raw;
+      try {
+        if (raw.includes('http') || raw.includes('?room=')) {
+          const parsedUrl = new URL(raw.startsWith('http') ? raw : `https://example.com/${raw}`);
+          roomKey = parsedUrl.searchParams.get('room') || raw;
+        }
+      } catch (_) {}
+
+      roomKey = roomKey.replace(/[^a-zA-Z0-9_-]/g, '');
+      if (!roomKey) {
+        showToast('密鑰格式不正確！');
+        return;
+      }
+      enterBoard(roomKey);
+    });
+
+    // 點擊本機記憶的歷史海豚堂看板捷徑
+    document.getElementById('recent-boards-list').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-enter-room]');
+      if (btn) {
+        enterBoard(btn.getAttribute('data-enter-room'));
+      }
+    });
+
+    // 返回入口大廳
+    document.getElementById('btn-back-lobby').addEventListener('click', () => {
+      clearSubscriptions();
+      state.roomKey = null;
+      const url = new URL(window.location.href);
+      url.searchParams.delete('room');
+      window.history.replaceState({}, '', url.toString());
+      document.title = '海豚堂｜私密匿名文字討論板 (Hidden 2ch BBS)';
+      renderLobby();
+    });
+
+    // AA 字型切換開關
+    document.getElementById('btn-toggle-aa').addEventListener('click', (e) => {
+      state.aaFontMode = !state.aaFontMode;
+      document.body.classList.toggle('aa-font-mode', state.aaFontMode);
+      e.target.textContent = state.aaFontMode ? 'AA字型：開' : 'AA字型：關';
+      showToast(state.aaFontMode ? '已切換為 AA 字元畫等寬字型模式' : '已切換回標準文字模式');
+    });
+
+    // 討論串樓層精簡 / 全部展開切換
+    document.getElementById('btn-toggle-compact').addEventListener('click', (e) => {
+      state.compactMode = !state.compactMode;
+      e.target.textContent = state.compactMode ? '顯示：最新 5 則' : '顯示：全部樓層';
+      renderBoardUI();
+    });
+
+    // 板主編輯看板名稱與版規公告
+    document.getElementById('btn-edit-rules').addEventListener('click', async () => {
+      if (!state.isAdmin || !state.roomKey) return;
+      const resName = await showCustomModal({
+        title: '編輯海豚堂看板標題',
+        message: '請輸入新的看板名稱（留空則維持目前名稱）：',
+        showInput: true,
+        inputValue: state.boardMeta?.name || '海豚堂',
+        inputPlaceholder: '海豚堂',
+        confirmText: '下一步'
+      });
+      if (!resName.confirmed) return;
+
+      const resRules = await showCustomModal({
+        title: '編輯海豚堂ローカルルール（版規與公告欄）',
+        message: '請輸入要顯示在看板頂部的公告內容：',
+        showInput: true,
+        inputValue: state.boardMeta?.rules || '歡迎來到海豚堂！',
+        inputPlaceholder: '輸入公告內容...',
+        confirmText: '儲存設定'
+      });
+      if (!resRules.confirmed) return;
+
+      const updates = {};
+      if (resName.value && resName.value.trim()) updates.name = resName.value.trim();
+      if (resRules.value && resRules.value.trim()) updates.rules = resRules.value.trim();
+
+      if (Object.keys(updates).length > 0) {
+        await updateBoardMeta(state.roomKey, updates);
+        showToast('已更新海豚堂看板設定！');
+      }
+    });
+
+    // 一鍵複製私密邀請連結
+    document.getElementById('btn-copy-invite').addEventListener('click', () => {
+      const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.set('room', state.roomKey);
+      copyTextToClipboard(
+        shareUrl.toString(),
+        '已複製「海豚堂」專屬私密邀請連結！傳送給朋友即可進入。'
+      );
+    });
+
+    // 複製板主管理密碼與關閉提醒
+    document.getElementById('btn-copy-admin-key').addEventListener('click', () => {
+      const key = document.getElementById('created-admin-key').textContent;
+      copyTextToClipboard(key, '已複製板主管理密碼！請妥善保存。');
+    });
+
+    document.getElementById('btn-dismiss-admin-notice').addEventListener('click', () => {
+      document.getElementById('admin-key-notice').classList.add('hidden');
+    });
+
+    // 板主管理員驗證按鈕
+    document.getElementById('btn-admin-auth').addEventListener('click', async () => {
+      if (state.isAdmin) {
+        const res = await showCustomModal({
+          title: '登出板主管理模式',
+          message: '目前板主管理權限已啟用，是否要退出管理模式？',
+          confirmText: '退出管理模式'
+        });
+        if (res.confirmed) {
+          state.isAdmin = false;
+          document.getElementById('admin-badge').classList.add('hidden');
+          document.getElementById('btn-edit-rules').classList.add('hidden');
+          renderBoardUI();
+          showToast('已退出板主管理模式');
+        }
+        return;
+      }
+
+      const res = await showCustomModal({
+        title: '海豚堂板主身分驗證',
+        message: '請輸入建立此海豚堂看板時產生的板主密碼 (Admin Key)：',
+        showInput: true,
+        inputPlaceholder: '例如：DOL-XXXXXXXX',
+        confirmText: '驗證密碼'
+      });
+
+      if (res.confirmed && res.value) {
+        if (state.boardMeta && res.value.trim() === state.boardMeta.adminKey) {
+          state.isAdmin = true;
+          document.getElementById('admin-badge').classList.remove('hidden');
+          document.getElementById('btn-edit-rules').classList.remove('hidden');
+          renderBoardUI();
+          showToast('板主驗證成功！現在可編輯公告、刪除樓層或鎖定討論串。');
+        } else {
+          showToast('板主管理密碼錯誤！');
+        }
+      }
+    });
+
+    // 開新討論串表單送出
+    document.getElementById('new-thread-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!state.roomKey) return;
+
+      const titleEl = document.getElementById('nt-title');
+      const nameEl = document.getElementById('nt-name');
+      const emailEl = document.getElementById('nt-email');
+      const bodyEl = document.getElementById('nt-body');
+      const submitBtn = document.getElementById('btn-submit-thread');
+
+      const title = titleEl.value.trim();
+      const body = bodyEl.value.trim();
+      if (!title || !body) return;
+
+      submitBtn.disabled = true;
+      try {
+        const now = Date.now();
+        const defaultAnon = state.boardMeta?.defaultAnon || '海豚堂的無名氏';
+        const { displayName, tripcode } = parseNameAndTripcode(nameEl.value, defaultAnon);
+
+        const threadId = await createThreadRecord(state.roomKey, {
+          title: title,
+          createdAt: now,
+          bumpedAt: now,
+          lastReplyAt: now,
+          postCount: 1,
+          isLocked: false
+        });
+
+        await createPostRecord(state.roomKey, {
+          threadId: threadId,
+          postNum: 1,
+          name: displayName,
+          tripcode: tripcode,
+          email: emailEl.value.trim(),
+          dateStr: format2chDate(now),
+          dailyId: state.dailyUserId,
+          body: body,
+          createdAt: now,
+          isDeleted: false
+        });
+
+        titleEl.value = '';
+        bodyEl.value = '';
+        state.focusedThreadId = null;
+        showToast('新討論串建立完成！');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error('開串失敗:', err);
+        showToast('建立討論串失敗，請稍後重試。');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // 討論串內回覆表單送出 (事件委派)
+    document.getElementById('threads-container').addEventListener('submit', async (e) => {
+      if (!e.target.classList.contains('reply-form')) return;
+      e.preventDefault();
+      if (!state.roomKey) return;
+
+      const form = e.target;
+      const threadId = form.getAttribute('data-thread-id');
+      const nameInput = form.querySelector('input[name="name"]');
+      const emailInput = form.querySelector('input[name="email"]');
+      const sageCheck = form.querySelector('input[name="sageCheck"]');
+      const bodyTextarea = form.querySelector('textarea[name="body"]');
+      const submitBtn = form.querySelector('button[type="submit"]');
+
+      const body = bodyTextarea.value.trim();
+      if (!body) return;
+
+      const threadObj = state.threads.find(t => t.id === threadId);
+      const existingPosts = state.postsByThread[threadId] || [];
+      if (threadObj?.isLocked || existingPosts.length >= 1000) {
+        showToast('此討論串已鎖定或已達 1000 樓上限，無法回覆。');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      try {
+        const now = Date.now();
+        const nextPostNum = existingPosts.length > 0
+          ? Math.max(...existingPosts.map(p => p.postNum || 0)) + 1
+          : 1;
+
+        const defaultAnon = state.boardMeta?.defaultAnon || '海豚堂的無名氏';
+        const { displayName, tripcode } = parseNameAndTripcode(nameInput.value, defaultAnon);
+
+        let emailVal = emailInput.value.trim();
+        const isSage = sageCheck.checked || emailVal.toLowerCase().includes('sage');
+        if (sageCheck.checked && !emailVal) {
+          emailVal = 'sage';
+        }
+
+        await createPostRecord(state.roomKey, {
+          threadId: threadId,
+          postNum: nextPostNum,
+          name: displayName,
+          tripcode: tripcode,
+          email: emailVal,
+          dateStr: format2chDate(now),
+          dailyId: state.dailyUserId,
+          body: body,
+          createdAt: now,
+          isDeleted: false
+        });
+
+        // 更新討論串資訊：若非 sage 則更新 bumpedAt 將討論串頂到最上方 (age)
+        const updatePayload = {
+          postCount: nextPostNum,
+          lastReplyAt: now
+        };
+        if (!isSage) {
+          updatePayload.bumpedAt = now;
+        }
+        await updateThreadRecord(state.roomKey, threadId, updatePayload);
+
+        bodyTextarea.value = '';
+        showToast(isSage ? `已寫入 >>${nextPostNum}（sage 不推文）` : `已寫入 >>${nextPostNum}（age 推文）`);
+      } catch (err) {
+        console.error('回覆失敗:', err);
+        showToast('寫入回覆時發生錯誤，請稍後重試。');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // ==========================================
+    // 7. 互動操作：點擊樓層引用、Anchor 懸浮預覽、討論串聚焦與管理動作
+    // ==========================================
+    document.getElementById('threads-container').addEventListener('click', async (e) => {
+      // 1. 點擊樓層編號 -> 插入 >>樓層編號 到該討論串的回覆框
+      const quoteEl = e.target.closest('[data-action="quote-post"]');
+      if (quoteEl) {
+        const threadId = quoteEl.getAttribute('data-thread-id');
+        const postNum = quoteEl.getAttribute('data-post-num');
+        const threadEl = document.getElementById(`thread-${threadId}`);
+        const textarea = threadEl?.querySelector('textarea[name="body"]');
+        if (textarea) {
+          const prefix = textarea.value && !textarea.value.endsWith('\n') ? '\n' : '';
+          textarea.value += `${prefix}>>${postNum}\n`;
+          textarea.focus();
+          textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      // 2. 點擊內文中的 >>樓層 錨點 -> 平滑捲動並高亮目標樓層
+      const anchorEl = e.target.closest('.post-anchor');
+      if (anchorEl) {
+        const threadId = anchorEl.getAttribute('data-thread-id');
+        const targetNum = anchorEl.getAttribute('data-target-num');
+        const targetPostEl = document.getElementById(`res-${threadId}-${targetNum}`);
+        if (targetPostEl) {
+          targetPostEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetPostEl.classList.remove('highlight-post');
+          void targetPostEl.offsetWidth; // 觸發重繪以重啟動畫
+          targetPostEl.classList.add('highlight-post');
+        } else {
+          showToast(`找不到 >>${targetNum} 樓（可能已被省略顯示或尚未存在）`);
+        }
+        return;
+      }
+
+      // 3. 切換「只看此串 / 顯示全部討論串」
+      const focusBtn = e.target.closest('[data-action="focus-thread"]');
+      if (focusBtn) {
+        const threadId = focusBtn.getAttribute('data-thread-id');
+        state.focusedThreadId = (state.focusedThreadId === threadId) ? null : threadId;
+        renderBoardUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // 4. 管理員：單樓層刪除 (あぼーん)
+      const delPostBtn = e.target.closest('[data-action="delete-post"]');
+      if (delPostBtn && state.isAdmin) {
+        const postId = delPostBtn.getAttribute('data-post-id');
+        const postNum = delPostBtn.getAttribute('data-post-num');
+        const res = await showCustomModal({
+          title: '板主刪除確認 (あぼーん)',
+          message: `確定要將 >>${postNum} 的內容替換為「あぼーん」嗎？`,
+          confirmText: '確定刪除'
+        });
+        if (res.confirmed) {
+          await updatePostRecord(state.roomKey, postId, {
+            isDeleted: true,
+            body: 'あぼーん'
+          });
+          showToast(`已將 >>${postNum} 設為あぼーん`);
+        }
+        return;
+      }
+
+      // 5. 管理員：鎖定/解鎖討論串
+      const lockBtn = e.target.closest('[data-action="toggle-lock"]');
+      if (lockBtn && state.isAdmin) {
+        const threadId = lockBtn.getAttribute('data-thread-id');
+        const currentLocked = lockBtn.getAttribute('data-locked') === 'true';
+        await updateThreadRecord(state.roomKey, threadId, {
+          isLocked: !currentLocked
+        });
+        showToast(!currentLocked ? '已鎖定此討論串' : '已解除鎖定');
+        return;
+      }
+
+      // 6. 管理員：刪除整串討論
+      const delThreadBtn = e.target.closest('[data-action="delete-thread"]');
+      if (delThreadBtn && state.isAdmin) {
+        const threadId = delThreadBtn.getAttribute('data-thread-id');
+        const res = await showCustomModal({
+          title: '刪除整串討論確認',
+          message: '確定要永久刪除這整串討論嗎？此操作無法復原。',
+          confirmText: '永久刪除整串'
+        });
+        if (res.confirmed) {
+          await deleteThreadRecord(state.roomKey, threadId);
+          if (state.focusedThreadId === threadId) state.focusedThreadId = null;
+          showToast('已刪除該討論串');
+        }
+      }
+    });
+
+    // 單一討論串聚焦橫幅的「顯示所有討論串」按鈕
+    document.getElementById('btn-show-all-threads').addEventListener('click', () => {
+      state.focusedThreadId = null;
+      renderBoardUI();
+    });
+
+    // 討論串標題即時搜尋過濾
+    document.getElementById('thread-search-input').addEventListener('input', (e) => {
+      state.searchQuery = e.target.value.trim();
+      renderBoardUI();
+    });
+
+    // 滑鼠懸浮於 >>數字 上顯示目標樓層預覽視窗 (2ch 經典 Anchor Popup)
+    const anchorPopup = document.getElementById('anchor-popup');
+    document.addEventListener('mouseover', (e) => {
+      const anchor = e.target.closest('.post-anchor');
+      if (!anchor) return;
+
+      const threadId = anchor.getAttribute('data-thread-id');
+      const targetNum = parseInt(anchor.getAttribute('data-target-num'), 10);
+      const posts = state.postsByThread[threadId] || [];
+      const targetPost = posts.find(p => p.postNum === targetNum);
+
+      if (!targetPost) {
+        anchorPopup.innerHTML = `<div class="text-xs text-gray-500">&gt;&gt;${targetNum} 不存在</div>`;
+      } else {
+        const isDeleted = !!targetPost.isDeleted;
+        const tripHtml = targetPost.tripcode ? `<span class="res-trip ml-0.5">${escapeHtml(targetPost.tripcode)}</span>` : '';
+        anchorPopup.innerHTML = `
+          <div class="text-xs border-b border-gray-300 pb-1 mb-1">
+            <span class="font-bold">${targetPost.postNum}</span>
+            <span> 名前：</span>
+            <span class="res-name">${escapeHtml(targetPost.name || '海豚堂的無名氏')}</span>${tripHtml}
+            <span class="text-gray-600 ml-1">：${escapeHtml(targetPost.dateStr || '')} ID:${escapeHtml(targetPost.dailyId || '')}</span>
+          </div>
+          <div class="whitespace-pre-wrap break-words text-xs sm:text-sm max-h-64 overflow-y-auto">${isDeleted ? '<span class="italic text-gray-400">あぼーん</span>' : formatPostBody(targetPost.body, threadId)}</div>
+        `;
+      }
+
+      const rect = anchor.getBoundingClientRect();
+      anchorPopup.classList.remove('hidden');
+
+      const popupRect = anchorPopup.getBoundingClientRect();
+      let left = rect.left;
+      let top = rect.bottom + 6;
+      if (left + popupRect.width > window.innerWidth - 12) {
+        left = Math.max(12, window.innerWidth - popupRect.width - 12);
+      }
+      if (top + popupRect.height > window.innerHeight - 12) {
+        top = Math.max(12, rect.top - popupRect.height - 6);
+      }
+      anchorPopup.style.left = `${left}px`;
+      anchorPopup.style.top = `${top}px`;
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      const anchor = e.target.closest('.post-anchor');
+      if (anchor) {
+        anchorPopup.classList.add('hidden');
+      }
+    });
+
+    // ==========================================
+    // 8. 多人雲端連線設定精靈 & 匯出專屬 HTML 邏輯
+    // ==========================================
+    const cloudWizardModal = document.getElementById('cloud-wizard-modal');
+    const cloudTextarea = document.getElementById('cloud-config-textarea');
+
+    document.querySelectorAll('.btn-open-cloud-wizard').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const active = resolveActiveFirebaseConfig();
+        if (active && !cloudTextarea.value.trim()) {
+          cloudTextarea.value = JSON.stringify(active, null, 2);
+        }
+        updateSyncStatusBadges();
+        cloudWizardModal.classList.remove('hidden');
+      });
+    });
+
+    document.getElementById('btn-close-cloud-wizard').addEventListener('click', () => {
+      cloudWizardModal.classList.add('hidden');
+    });
+
+    // 套用使用者貼上的 Firebase 設定並重新初始化連線
+    document.getElementById('btn-save-cloud-config').addEventListener('click', async () => {
+      try {
+        const parsed = parseFirebaseConfigInput(cloudTextarea.value);
+        if (!parsed) {
+          showToast('請先貼上 Firebase Config 內容！');
+          return;
+        }
+        customCloudConfig = parsed;
+        await initConnectionEngine();
+        cloudWizardModal.classList.add('hidden');
+        if (useCloudMode) {
+          showToast('雲端設定套用成功！現在已連接即時多人資料庫。');
+          if (state.roomKey) {
+            await enterBoard(state.roomKey);
+          }
+        }
+      } catch (err) {
+        showToast('設定格式錯誤：' + err.message);
+      }
+    });
+
+    // 清除自訂雲端設定
+    document.getElementById('btn-clear-cloud-config').addEventListener('click', async () => {
+      customCloudConfig = null;
+      cloudTextarea.value = '';
+      await initConnectionEngine();
+      showToast('已清除自訂雲端設定');
+      if (state.roomKey) {
+        await enterBoard(state.roomKey);
+      }
+    });
+
+    // 一鍵匯出「已綁定雲端設定的獨立海豚堂 HTML 檔案」
+    document.getElementById('btn-export-bound-html').addEventListener('click', () => {
+      let configToEmbed = resolveActiveFirebaseConfig();
+      if (cloudTextarea.value.trim()) {
+        try {
+          configToEmbed = parseFirebaseConfigInput(cloudTextarea.value);
+        } catch (err) {
+          showToast('Firebase Config 格式有誤，請修正後再匯出：' + err.message);
+          return;
+        }
+      }
+
+      if (!configToEmbed || !configToEmbed.apiKey) {
+        showToast('請先貼上有效的 Firebase Config，才能匯出已綁定雲端的 HTML！');
+        return;
+      }
+
+      // 取得完整網頁原始碼並替換內嵌設定標記區塊
+      const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const markerRegex = /\/\* __DOLPHIN_EMBEDDED_CONFIG_START__ \*\/[\s\S]*?\/\* __DOLPHIN_EMBEDDED_CONFIG_END__ \*\//;
+      const replacement = `/* __DOLPHIN_EMBEDDED_CONFIG_START__ */\n    const EMBEDDED_FIREBASE_CONFIG = ${JSON.stringify(configToEmbed)};\n    /* __DOLPHIN_EMBEDDED_CONFIG_END__ */`;
+
+      if (!markerRegex.test(fullHtml)) {
+        showToast('匯出時發生結構比對錯誤，請重試。');
+        return;
+      }
+
+      const boundHtml = fullHtml.replace(markerRegex, replacement);
+      const blob = new Blob([boundHtml], { type: 'text/html;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
+
+      showToast('已下載「index.html」！上傳至 Netlify Drop / GitHub Pages 即可與朋友即時聊天。', 5000);
+    });
+
+    // ==========================================
+    // 9. 應用程式啟動入口
+    // ==========================================
+    window.addEventListener('load', async () => {
+      await initConnectionEngine();
+
+      const params = new URLSearchParams(window.location.search);
+      const roomParam = params.get('room');
+      if (roomParam && roomParam.trim()) {
+        const cleanRoom = roomParam.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+        if (cleanRoom) {
+          await enterBoard(cleanRoom);
+          return;
+        }
+      }
+      renderLobby();
+    });
+  </script>
+</body>
+</html>
